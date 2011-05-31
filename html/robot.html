@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-gb" lang="en-gb" dir="ltr" > 
+<head> 
+  <title>Robot demo</title>
+  <script type="text/javascript" src="./js/mootools.js"></script>
+  <script language="javascript" type="text/javascript">
+    var droid=new Android();
+
+    function postToPython(action) {
+        data = { "action": action }
+        droid.eventPost("robotpython", Json.toString(data));
+    }
+
+    window.addEvent("domready", function() {
+        $('bFwd').addEvent('click', function() { postToPython("FWD"); });
+        $('bLeft').addEvent('click', function() { postToPython("LEFT"); });
+        $('bRight').addEvent('click', function() { postToPython("RIGHT"); });
+        $('bBack').addEvent('click', function() { postToPython("BACK"); });
+        $('bExit').addEvent('click', function() { postToPython("EXIT"); });
+    });
+  </script>
+</head>
+<body>
+  <table align=center>
+    <tr>
+      <td />
+      <td align=center><button id="bFwd">FWD</button></td>
+      <td />
+    </tr>
+    <tr>
+      <td align=center><button id="bLeft">LEFT</button></td>
+      <td />
+      <td align=center><button id="bRight">RIGHT</button></td>
+    </tr>
+    <tr>
+      <td />
+      <td align=center><button id="bBack">BACK</button></td>
+      <td />
+    </tr>
+  </table>
+  <button id="bExit">EXIT</button>
+</body>
+</html>
