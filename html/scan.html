@@ -4,8 +4,14 @@
   <title>Robot demo</title>
   <script type="text/javascript" src="./js/mootools.js"></script>
   <script language="javascript" type="text/javascript">
+
     var droid=new Android();
 
+
+    /* Post an event to the python backend to tell it to scan for nearby
+       Bluetooth devices.
+       Returns: An array of devices found by the backend.
+     */
     function postAndWaitForCellbotDevices() {
       devices = []
 
@@ -27,6 +33,14 @@
       return devices;
     }
 
+
+    /* Given a list of Bluetooth devices, prompt the user to choose which
+       device to connect to.
+       Parameter: devices - an array of devices. Each device is represented
+                            as [<name>, <bd_addr>].
+       Returns: The device selected by the user, represented as
+                [<name>, <bd_addr>].
+     */
     function askUserToSelectDevice(devices) {
       droid.log("Populating list of " + devices.length + " length.");
 
@@ -46,9 +60,13 @@
       return devices[selected_idx];
     }
 
-    function scanAndConnectCellbot() {
 
+    /* Prompt the user to select from a list of available Cellbot devices and
+       connect to the selected device.
+     */
+    function scanAndConnectCellbot() {
       devices = postAndWaitForCellbotDevices();
+      
       // exit if no devices were found.
       if (devices.length == 0) {
         droid.log("No Cellbot Devices Found. Exiting.");
@@ -61,9 +79,11 @@
       device_selected = askUserToSelectDevice(devices);
       droid.log("Selected name: " + device_selected[1] + " MAC: " + device_selected[0]);
 
-      selected_mac = device_selected[0];
-      droid.eventPost("PYTHON", JSON.stringify({action:"connectBluetoothDevice", data:selected_mac}));
+      selected_bd_addr = device_selected[0];
+      droid.eventPost("PYTHON", JSON.stringify({action:"connectBluetoothDevice",
+                                                data:selected_bd_addr}));
     }
+
 
     window.addEvent("domready", function() {
       $('bScan').addEvent('click', function() { scanAndConnectCellbot(); });
@@ -71,7 +91,7 @@
   </script>
 </head>
 <body>
-  <h1>Connect to a Cellbot</h1>
+  <h2>Connect to a Cellbot</h2>
   <button id="bScan">Scan for Bluetooth Devices</button>
 </body>
 </html>
