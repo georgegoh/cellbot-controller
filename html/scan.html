@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-gb" lang="en-gb" dir="ltr" > 
+<head> 
+  <title>Robot demo</title>
+  <script type="text/javascript" src="./js/mootools.js"></script>
+  <script language="javascript" type="text/javascript">
+    var droid=new Android();
+
+    function postAndWaitForCellbotDevices() {
+      devices = []
+
+      // let user know what we're waiting for.
+      droid.dialogCreateSpinnerProgress("Scanning", "Scanning for Cellbot Bluetooth devices.");
+      droid.dialogShow();
+
+      // ask backend to scan for devices and wait for the result.
+      droid.eventPost("PYTHON", JSON.stringify({action:"scanBluetooth", data:""}));
+      result = droid.eventWaitFor("bluetoothDevicesFound").result;
+      droid.eventClearBuffer();
+
+      // got the results of the scan.
+      droid.dialogDismiss();
+      if (result) {
+        devices = JSON.parse(result.data);
+      }
+
+      return devices;
+    }
+
+    function askUserToSelectDevice(devices) {
+      droid.log("Populating list of " + devices.length + " length.");
+
+      // massage the device information into dialog-box-friendly format.
+      deviceList = new Array();
+      for (i = 0; i < devices.length; i++) {
+        droid.log("Device: " + devices[i][1] + ", " + devices[i][0]);
+        deviceList[i] = devices[i][1] + "(" + devices[i][0] + ")";
+      }
+
+      // show the list of available devices and wait for user choice.
+      droid.dialogCreateAlert("Select Device", "Choose the cellbot to connect to");
+      droid.dialogSetItems(deviceList);
+      droid.dialogShow();
+      selected_idx = droid.dialogGetResponse().result.item;
+      
+      return devices[selected_idx];
+    }
+
+    function scanAndConnectCellbot() {
+
+      devices = postAndWaitForCellbotDevices();
+      // exit if no devices were found.
+      if (devices.length == 0) {
+        droid.log("No Cellbot Devices Found. Exiting.");
+        droid.dialogCreateAlert("No Cellbots Found", "No Cellbot devices could be found.");
+        droid.dialogShow();
+        droid.dialogGetResponse();
+        return;
+      }
+
+      device_selected = askUserToSelectDevice(devices);
+      droid.log("Selected name: " + device_selected[1] + " MAC: " + device_selected[0]);
+
+      selected_mac = device_selected[0];
+      droid.eventPost("PYTHON", JSON.stringify({action:"connectBluetoothDevice", data:selected_mac}));
+    }
+
+    window.addEvent("domready", function() {
+      $('bScan').addEvent('click', function() { scanAndConnectCellbot(); });
+    });
+  </script>
+</head>
+<body>
+  <h1>Connect to a Cellbot</h1>
+  <button id="bScan">Scan for Bluetooth Devices</button>
+</body>
+</html>
